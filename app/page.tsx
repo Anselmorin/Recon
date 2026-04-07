@@ -5,6 +5,7 @@ import { Task, ReconResult } from "@/lib/types";
 import ReconForm from "@/components/ReconForm";
 import VerdictScreen from "@/components/VerdictScreen";
 import TaskQueue from "@/components/TaskQueue";
+import FeedbackButton from "@/components/FeedbackButton";
 
 type Screen = "form" | "loading" | "verdict" | "queue";
 
@@ -99,6 +100,8 @@ export default function HomePage() {
           onReject={() => { setPendingTask(null); setLastResult(null); setScreen("form"); }}
         />
       )}
+
+      <FeedbackButton />
 
       {screen === "queue" && (
         <TaskQueue

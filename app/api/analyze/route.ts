@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 function analyze(task: string, gain: string, estimatedMinutes: number, context: string[] = []) {
   const taskLower = task.toLowerCase();
   const gainLower = gain.toLowerCase();
+  const contextStr = context.join(" ").toLowerCase();
 
   // Keywords that suggest complexity
   const complexKeywords = ["drive", "travel", "commute", "install", "setup", "build", "fix", "repair", "clean", "organize", "move", "buy", "shop", "cook", "plan", "research", "apply", "fill out", "sign up", "errand", "pick up", "drop off", "stop"];
@@ -81,7 +82,6 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
   const finalHiddenSteps = hiddenSteps.slice(0, 4);
 
   // Factor in context answers
-  const contextStr = context.join(" ").toLowerCase();
   const hasBadParking = contextStr.includes("valet") || contextStr.includes("street parking") || contextStr.includes("paid parking");
   const hasHeavyTraffic = contextStr.includes("heavy") || contextStr.includes("rush hour");
   const hasLines = contextStr.includes("always a line") || contextStr.includes("unpredictable");
