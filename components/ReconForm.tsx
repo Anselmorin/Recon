@@ -219,6 +219,12 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
 
   return (
     <form onSubmit={handleMainNext} className="flex flex-col gap-6 animate-fade-in">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3">
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Think:</p>
+        <p className="text-xs text-zinc-500 leading-relaxed">
+          Driving · Traffic · Parking · Getting ready · Lines · Stopovers · Errands along the way · Cleanup after · Tools needed · Getting back
+        </p>
+      </div>
       <div>
         <label className="text-xs text-zinc-500 uppercase tracking-widest mb-2 block">
           What's the task?
