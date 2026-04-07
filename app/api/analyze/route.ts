@@ -1,61 +1,93 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  const { task, gain, estimatedMinutes } = await req.json();
+function analyze(task: string, gain: string, estimatedMinutes: number) {
+  const taskLower = task.toLowerCase();
+  const gainLower = gain.toLowerCase();
 
-  const prompt = `You are a brutally honest time and effort analyst. A user wants to know if a task is worth doing.
+  // Keywords that suggest complexity
+  const complexKeywords = ["drive", "travel", "commute", "install", "setup", "build", "fix", "repair", "clean", "organize", "move", "buy", "shop", "cook", "plan", "research", "apply", "fill out", "sign up"];
+  const quickKeywords = ["email", "text", "call", "check", "read", "watch", "look up", "google", "search"];
+  const lowValueKeywords = ["maybe", "might", "could", "possibly", "sort of", "kinda"];
+  const highValueKeywords = ["money", "save", "$", "health", "important", "deadline", "need", "must", "job", "school", "work"];
 
-Task: "${task}"
-What they get from it: "${gain}"
-Their time estimate: ${estimatedMinutes} minutes
+  const isComplex = complexKeywords.some(k => taskLower.includes(k));
+  const isQuick = quickKeywords.some(k => taskLower.includes(k));
+  const isLowValue = lowValueKeywords.some(k => gainLower.includes(k));
+  const isHighValue = highValueKeywords.some(k => gainLower.includes(k));
 
-Analyze this and respond with ONLY valid JSON (no markdown, no code blocks):
-{
-  "worthIt": true or false,
-  "verdict": "one punchy sentence verdict (max 12 words)",
-  "realisticMinutes": realistic time in minutes as a number,
-  "reasoning": "2-3 sentences explaining why it is or isn't worth it, and why it takes longer",
-  "hiddenSteps": ["step they forgot 1", "step they forgot 2", "step they forgot 3"]
+  // Hidden steps based on task type
+  const hiddenStepsMap: Record<string, string[]> = {
+    drive: ["Finding parking", "Traffic you didn't account for", "Getting ready to leave"],
+    shop: ["Browsing longer than planned", "Checkout line", "Getting to and from the car"],
+    cook: ["Prep and cleanup time", "Waiting for it to heat up", "Doing the dishes after"],
+    clean: ["Gathering supplies", "Moving things out of the way", "Putting everything back"],
+    install: ["Reading the instructions", "Troubleshooting when it doesn't work", "Restarting/testing"],
+    fix: ["Diagnosing the actual problem", "Getting the right tools", "Testing the fix"],
+    build: ["Planning and gathering materials", "Mistakes you'll have to redo", "Cleanup after"],
+    research: ["Going down rabbit holes", "Cross-checking sources", "Writing it down"],
+    default: ["Getting started (startup time)", "Unexpected interruptions", "Finishing touches"],
+  };
+
+  let hiddenSteps = hiddenStepsMap.default;
+  for (const [key, steps] of Object.entries(hiddenStepsMap)) {
+    if (taskLower.includes(key)) {
+      hiddenSteps = steps;
+      break;
+    }
+  }
+
+  // Realistic time multiplier
+  let multiplier = 1.3; // baseline — people always underestimate
+  if (isComplex) multiplier += 0.4;
+  if (isQuick) multiplier = Math.max(1.1, multiplier - 0.2);
+  if (estimatedMinutes < 15) multiplier += 0.2; // short tasks always take longer than you think
+
+  const realisticMinutes = Math.round(estimatedMinutes * multiplier);
+
+  // Worth it scoring
+  let score = 50; // neutral
+  if (isHighValue) score += 25;
+  if (isLowValue) score -= 20;
+  if (isComplex && !isHighValue) score -= 10;
+  if (estimatedMinutes > 120) score -= 15; // big time investment needs big payoff
+  if (realisticMinutes > estimatedMinutes * 1.5) score -= 10; // huge underestimate is a red flag
+
+  const worthIt = score >= 50;
+
+  // Generate verdict
+  const verdicts = {
+    highYes: ["Solid investment, do it.", "Worth your time, go for it.", "Clear payoff, don't skip this."],
+    lowYes: ["Borderline, but probably worth it.", "Marginal win, your call.", "Slight edge toward doing it."],
+    lowNo: ["Barely worth the effort.", "The juice isn't worth the squeeze.", "Questionable return on your time."],
+    highNo: ["Hard pass. Not worth it.", "Skip it — cost outweighs the gain.", "Your time is worth more than this."],
+  };
+
+  let verdictList;
+  if (worthIt && score >= 70) verdictList = verdicts.highYes;
+  else if (worthIt) verdictList = verdicts.lowYes;
+  else if (score >= 35) verdictList = verdicts.lowNo;
+  else verdictList = verdicts.highNo;
+
+  const verdict = verdictList[Math.floor(Math.random() * verdictList.length)];
+
+  // Reasoning
+  const timeNote = realisticMinutes > estimatedMinutes
+    ? `This will probably take ${realisticMinutes} minutes, not ${estimatedMinutes} — people almost always underestimate.`
+    : `Your time estimate seems reasonable for this.`;
+
+  const valueNote = isHighValue
+    ? "The payoff seems genuinely meaningful."
+    : isLowValue
+    ? "The gain sounds uncertain — factor that in."
+    : "The payoff is decent but not exceptional.";
+
+  const reasoning = `${timeNote} ${valueNote} ${worthIt ? "On balance, it's worth doing." : "On balance, your time is better spent elsewhere."}`;
+
+  return { worthIt, verdict, realisticMinutes, reasoning, hiddenSteps };
 }
 
-Rules:
-- Be honest, not motivational. If it's not worth it, say so clearly.
-- hiddenSteps are the tasks-within-the-task they didn't account for (max 4, min 1)
-- realisticMinutes should almost always be higher than their estimate (people underestimate)
-- verdict should be punchy and direct, like a friend giving real talk`;
-
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-        }),
-      }
-    );
-
-    const data = await response.json();
-    console.log("Gemini raw response:", JSON.stringify(data).slice(0, 500));
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    if (!text) {
-      console.error("No text from Gemini:", data);
-      throw new Error("No response from Gemini");
-    }
-    // Strip markdown code blocks if present
-    const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    const result = JSON.parse(cleaned);
-    return NextResponse.json(result);
-  } catch (err) {
-    console.error("Recon API error:", err);
-    return NextResponse.json({
-      worthIt: false,
-      verdict: "Something went wrong.",
-      realisticMinutes: estimatedMinutes,
-      reasoning: "Couldn't analyze this right now.",
-      hiddenSteps: [],
-    }, { status: 500 });
-  }
+export async function POST(req: NextRequest) {
+  const { task, gain, estimatedMinutes } = await req.json();
+  const result = analyze(task, gain, estimatedMinutes);
+  return NextResponse.json(result);
 }
