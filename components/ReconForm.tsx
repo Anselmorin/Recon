@@ -58,13 +58,23 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
   const [step, setStep] = useState<"main" | "followup">("main");
   const [title, setTitle] = useState("");
   const [gain, setGain] = useState("");
+  const [category, setCategory] = useState("");
   const [hours, setHours] = useState("");
   const [mins, setMins] = useState("");
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const totalMins = (parseInt(hours || "0") * 60) + parseInt(mins || "0");
-  const canSubmit = title.trim() && gain.trim() && totalMins > 0;
+  const canSubmit = title.trim() && category && totalMins > 0;
+
+  const CATEGORIES = [
+    { id: "fun", label: "🎉 Fun" },
+    { id: "money", label: "💰 Save money" },
+    { id: "productive", label: "✅ Get stuff done" },
+    { id: "health", label: "💪 Health" },
+    { id: "social", label: "👥 Social" },
+    { id: "chore", label: "🧹 Chore" },
+  ];
   const allAnswered = followUps.every(f => answers[f.id]);
 
   const handleNext = (e: React.FormEvent) => {
@@ -72,8 +82,9 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
     if (!canSubmit) return;
     const fups = getFollowUps(title);
     setFollowUps(fups);
+    const gainLabel = CATEGORIES.find(c => c.id === category)?.label || category;
     if (fups.length > 0) setStep("followup");
-    else onSubmit(title.trim(), gain.trim(), totalMins, []);
+    else onSubmit(title.trim(), gainLabel, totalMins, []);
   };
 
   if (step === "followup") {
@@ -112,7 +123,7 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
             ← Back
           </button>
           <button
-            onClick={() => onSubmit(title.trim(), gain.trim(), totalMins, followUps.map(f => `${f.question} → ${answers[f.id] || ""}`))}
+            onClick={() => { const gl = CATEGORIES.find(c => c.id === category)?.label || category; onSubmit(title.trim(), gl, totalMins, followUps.map(f => `${f.question} → ${answers[f.id] || ""}`)); }}
             disabled={!allAnswered}
             className="flex-1 py-4 rounded-2xl text-sm text-white transition-all"
             style={{ background: allAnswered ? "linear-gradient(135deg, #a855f7, #3b82f6, #10b981)" : "#e5e7eb", color: allAnswered ? "white" : "#9ca3af" }}
@@ -140,9 +151,23 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
       </div>
 
       <div style={card}>
-        <label className="text-xs mb-1.5 block" style={{ color: "#9ca3af" }}>What do you get out of it?</label>
-        <textarea value={gain} onChange={e => setGain(e.target.value)} placeholder="e.g. Save money, feel productive, get it done..." rows={2}
-          className="resize-none focus:outline-none w-full text-sm" style={{ border: "none", background: "transparent", color: "#1a1a2e", padding: 0, outline: "none" }} />
+        <label className="text-xs mb-2 block" style={{ color: "#9ca3af" }}>Why bother?</label>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setCategory(c.id)}
+              className="px-3 py-1.5 rounded-full text-sm transition-all"
+              style={category === c.id
+                ? { background: "linear-gradient(135deg, #a855f7, #3b82f6)", color: "white" }
+                : { background: "#f3f4f6", color: "#6b7280" }
+              }
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={card}>
