@@ -16,6 +16,7 @@ function getFollowUps(task: string): FollowUp[] {
   const t = task.toLowerCase();
   const fu: FollowUp[] = [];
   if (t.match(/driv|car|ride|uber|lyft|commut|travel|trip|go to|head to|get to/)) {
+    fu.push({ id: "drive_time", question: "🚗 How long is the drive (one way)?", options: ["Under 10 min", "10–20 min", "20–45 min", "45+ min"] });
     fu.push({ id: "parking", question: "🅿️ What's parking like?", options: ["Free & easy", "Paid parking", "Valet", "Street parking (ugh)", "No idea"] });
     fu.push({ id: "traffic", question: "🚦 Traffic situation?", options: ["Clear roads", "Light traffic", "Moderate", "Heavy / rush hour"] });
   }
@@ -45,7 +46,9 @@ function getFollowUps(task: string): FollowUp[] {
     fu.push({ id: "interruptions", question: "📵 How likely are interruptions?", options: ["Full focus mode", "Probably a few", "Definitely some", "I'll get derailed for sure"] });
     fu.push({ id: "energy", question: "⚡ Energy level right now?", options: ["Fully charged", "Pretty good", "A bit tired", "Running on fumes"] });
   }
-  return fu.slice(0, 3);
+  // Allow up to 4 for driving (drive time + parking + traffic + one more)
+  const isDriving = t.match(/driv|car|ride|uber|lyft|commut|travel|trip|go to|head to|get to/);
+  return fu.slice(0, isDriving ? 4 : 3);
 }
 
 const card = { background: "white", borderRadius: "20px", padding: "1.25rem", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" };
