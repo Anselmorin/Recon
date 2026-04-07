@@ -5,36 +5,71 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
   const gainLower = gain.toLowerCase();
 
   // Keywords that suggest complexity
-  const complexKeywords = ["drive", "travel", "commute", "install", "setup", "build", "fix", "repair", "clean", "organize", "move", "buy", "shop", "cook", "plan", "research", "apply", "fill out", "sign up"];
+  const complexKeywords = ["drive", "travel", "commute", "install", "setup", "build", "fix", "repair", "clean", "organize", "move", "buy", "shop", "cook", "plan", "research", "apply", "fill out", "sign up", "errand", "pick up", "drop off", "stop"];
   const quickKeywords = ["email", "text", "call", "check", "read", "watch", "look up", "google", "search"];
   const lowValueKeywords = ["maybe", "might", "could", "possibly", "sort of", "kinda"];
   const highValueKeywords = ["money", "save", "$", "health", "important", "deadline", "need", "must", "job", "school", "work"];
+
+  // Detect task types for hidden steps + multipliers
+  const isDriving = taskLower.match(/driv|car|ride|commut|travel|go to|head to|get to|pick up|drop off/);
+  const isShopping = taskLower.match(/shop|store|buy|pick up|grab|purchase|errand|costco|target|walmart|grocery|market/);
+  const isCooking = taskLower.match(/cook|bak|meal|recipe|food|make dinner|make lunch|prep/);
+  const isCleaning = taskLower.match(/clean|tidy|organiz|declutter|sort|laundry|dishes|vacuum/);
+  const isFixing = taskLower.match(/fix|repair|install|set up|setup|assembl|build|replace/);
+  const isWorking = taskLower.match(/work|email|write|report|meeting|zoom|call|presentation|homework|essay/);
+  const isExercise = taskLower.match(/gym|workout|run|walk|hike|swim|exercise|sport|tennis|surf/);
+  const hasStopover = taskLower.match(/stop|detour|swing by|also|and then|on the way/);
+  const hasErrand = taskLower.match(/errand|return|exchange|post office|bank|pharmacy|doctor|appointment/);
 
   const isComplex = complexKeywords.some(k => taskLower.includes(k));
   const isQuick = quickKeywords.some(k => taskLower.includes(k));
   const isLowValue = lowValueKeywords.some(k => gainLower.includes(k));
   const isHighValue = highValueKeywords.some(k => gainLower.includes(k));
 
-  // Hidden steps based on task type
-  const hiddenStepsMap: Record<string, string[]> = {
-    drive: ["Finding parking", "Traffic you didn't account for", "Getting ready to leave"],
-    shop: ["Browsing longer than planned", "Checkout line", "Getting to and from the car"],
-    cook: ["Prep and cleanup time", "Waiting for it to heat up", "Doing the dishes after"],
-    clean: ["Gathering supplies", "Moving things out of the way", "Putting everything back"],
-    install: ["Reading the instructions", "Troubleshooting when it doesn't work", "Restarting/testing"],
-    fix: ["Diagnosing the actual problem", "Getting the right tools", "Testing the fix"],
-    build: ["Planning and gathering materials", "Mistakes you'll have to redo", "Cleanup after"],
-    research: ["Going down rabbit holes", "Cross-checking sources", "Writing it down"],
-    default: ["Getting started (startup time)", "Unexpected interruptions", "Finishing touches"],
-  };
+  // Build hidden steps dynamically based on detected task types
+  const hiddenSteps: string[] = [];
 
-  let hiddenSteps = hiddenStepsMap.default;
-  for (const [key, steps] of Object.entries(hiddenStepsMap)) {
-    if (taskLower.includes(key)) {
-      hiddenSteps = steps;
-      break;
-    }
+  if (isDriving) {
+    hiddenSteps.push("Getting ready + walking to the car");
+    hiddenSteps.push("Finding parking (always takes longer)");
   }
+  if (isShopping) {
+    hiddenSteps.push("Browsing longer than you planned");
+    hiddenSteps.push("Checkout line");
+  }
+  if (isCooking) {
+    hiddenSteps.push("Prep time before cooking even starts");
+    hiddenSteps.push("Cleanup and dishes after");
+  }
+  if (isCleaning) {
+    hiddenSteps.push("Gathering supplies and moving stuff out of the way");
+    hiddenSteps.push("Putting everything back after");
+  }
+  if (isFixing) {
+    hiddenSteps.push("Diagnosing the actual problem first");
+    hiddenSteps.push("Troubleshooting when it doesn't go right");
+  }
+  if (isExercise) {
+    hiddenSteps.push("Getting there and back");
+    hiddenSteps.push("Shower + getting ready after");
+  }
+  if (hasStopover || hasErrand) {
+    hiddenSteps.push("Stopover adds more time than you think");
+  }
+  if (isWorking) {
+    hiddenSteps.push("Getting into focus mode (startup time)");
+    hiddenSteps.push("Distractions and context-switching");
+  }
+
+  // Fallback if nothing detected
+  if (hiddenSteps.length === 0) {
+    hiddenSteps.push("Getting started (more than you'd think)");
+    hiddenSteps.push("Unexpected interruptions");
+    hiddenSteps.push("Finishing touches and cleanup");
+  }
+
+  // Cap at 4
+  const finalHiddenSteps = hiddenSteps.slice(0, 4);
 
   // Factor in context answers
   const contextStr = context.join(" ").toLowerCase();
@@ -51,19 +86,28 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
 
   // Realistic time multiplier
   let multiplier = 1.3; // baseline — people always underestimate
-  if (isComplex) multiplier += 0.4;
+  if (isComplex) multiplier += 0.3;
   if (isQuick) multiplier = Math.max(1.1, multiplier - 0.2);
   if (estimatedMinutes < 15) multiplier += 0.2; // short tasks always take longer than you think
+  if (isDriving) multiplier += 0.2; // driving always has surprises
+  if (isShopping) multiplier += 0.15;
+  if (isCooking) multiplier += 0.2; // prep + cleanup
+  if (isCleaning) multiplier += 0.15;
+  if (isFixing) multiplier += 0.35; // fixing always takes longer
+  if (isExercise) multiplier += 0.3; // travel + shower
+  if (hasStopover) multiplier += 0.2;
+  if (hasErrand) multiplier += 0.15;
+  // Context answers
   if (hasBadParking) multiplier += 0.2;
   if (hasHeavyTraffic) multiplier += 0.25;
   if (hasLines) multiplier += 0.15;
   if (hasNoIdea) multiplier += 0.2;
   if (hasBrowsing) multiplier += 0.15;
-  if (hasShower) multiplier += 0.25; // forgot the shower
+  if (hasShower) multiplier += 0.25;
   if (hasInterruptions) multiplier += 0.3;
   if (hasLowEnergy) multiplier += 0.2;
   if (hasFirstTime) multiplier += 0.4;
-  if (hasMissingItems) multiplier += 0.5; // need to shop first = double the time
+  if (hasMissingItems) multiplier += 0.5;
 
   const realisticMinutes = Math.round(estimatedMinutes * multiplier);
 
@@ -110,7 +154,7 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
 
   const reasoning = `${timeNote} ${valueNote} ${worthIt ? "On balance, it's worth doing." : "On balance, your time is better spent elsewhere."}`;
 
-  return { worthIt, verdict, realisticMinutes, reasoning, hiddenSteps };
+  return { worthIt, verdict, realisticMinutes, reasoning, hiddenSteps: finalHiddenSteps };
 }
 
 export async function POST(req: NextRequest) {
