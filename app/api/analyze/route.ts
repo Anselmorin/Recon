@@ -38,12 +38,18 @@ Rules:
     );
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    console.log("Gemini raw response:", JSON.stringify(data).slice(0, 500));
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (!text) {
+      console.error("No text from Gemini:", data);
+      throw new Error("No response from Gemini");
+    }
     // Strip markdown code blocks if present
     const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const result = JSON.parse(cleaned);
     return NextResponse.json(result);
-  } catch {
+  } catch (err) {
+    console.error("Recon API error:", err);
     return NextResponse.json({
       worthIt: false,
       verdict: "Something went wrong.",
