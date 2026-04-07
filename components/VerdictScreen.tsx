@@ -28,60 +28,61 @@ export default function VerdictScreen({
   const overrunPct = Math.round((overrun / estimatedMinutes) * 100);
 
   return (
-    <div className="flex flex-col gap-6 animate-pop">
+    <div className="flex flex-col gap-5 animate-pop">
       {/* Verdict badge */}
-      <div className={`rounded-2xl p-6 border ${
+      <div className={`rounded-3xl p-6 ${
         result.worthIt
-          ? "bg-emerald-950/50 border-emerald-500/30"
-          : "bg-red-950/50 border-red-500/30"
+          ? "bg-emerald-500/10 border-2 border-emerald-500/30"
+          : "bg-red-500/10 border-2 border-red-500/30"
       }`}>
-        <div className={`text-4xl font-black mb-2 ${result.worthIt ? "text-emerald-400" : "text-red-400"}`}>
-          {result.worthIt ? "WORTH IT" : "SKIP IT"}
+        <div className={`text-3xl font-black mb-2 flex items-center gap-2 ${result.worthIt ? "text-emerald-400" : "text-red-400"}`}>
+          {result.worthIt ? "✅ Worth it!" : "❌ Skip it"}
         </div>
-        <p className="text-white font-medium">{result.verdict}</p>
+        <p className="text-white font-medium text-base">{result.verdict}</p>
       </div>
 
       {/* Task */}
-      <div className="text-xs text-zinc-500 uppercase tracking-widest">
-        Task: <span className="text-zinc-300 normal-case tracking-normal">{task}</span>
+      <div className="bg-slate-800/50 rounded-2xl px-4 py-3">
+        <p className="text-xs text-slate-400 mb-0.5">Task</p>
+        <p className="text-slate-200 text-sm">{task}</p>
       </div>
 
       {/* Time breakdown */}
-      <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Time Reality Check</p>
+      <div className="bg-slate-800/50 rounded-2xl p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-4">⏱️ Time Reality Check</p>
         <div className="flex items-end gap-4">
           <div>
-            <p className="text-xs text-zinc-500 mb-0.5">You think</p>
-            <p className="text-2xl font-bold text-zinc-400">{formatTime(estimatedMinutes)}</p>
+            <p className="text-xs text-slate-500 mb-1">You think</p>
+            <p className="text-2xl font-bold text-slate-400">{formatTime(estimatedMinutes)}</p>
           </div>
-          <div className="text-zinc-600 pb-1">→</div>
+          <div className="text-slate-600 pb-1 text-lg">→</div>
           <div>
-            <p className="text-xs text-zinc-500 mb-0.5">Reality</p>
+            <p className="text-xs text-slate-500 mb-1">Reality</p>
             <p className="text-2xl font-bold text-white">{formatTime(result.realisticMinutes)}</p>
           </div>
           {overrun > 0 && (
             <div className="ml-auto text-right">
-              <p className="text-xs text-amber-500">+{formatTime(overrun)}</p>
-              <p className="text-xs text-zinc-600">{overrunPct}% longer</p>
+              <p className="text-sm font-bold text-amber-400">+{formatTime(overrun)}</p>
+              <p className="text-xs text-slate-500">{overrunPct}% longer</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Reasoning */}
-      <div>
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Why</p>
-        <p className="text-zinc-300 text-sm leading-relaxed">{result.reasoning}</p>
+      <div className="bg-slate-800/50 rounded-2xl p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">💬 Why</p>
+        <p className="text-slate-300 text-sm leading-relaxed">{result.reasoning}</p>
       </div>
 
       {/* Hidden steps */}
       {result.hiddenSteps.length > 0 && (
-        <div>
-          <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">What you forgot</p>
+        <div className="bg-slate-800/50 rounded-2xl p-5">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">🤦 What you probably forgot</p>
           <div className="flex flex-col gap-2">
             {result.hiddenSteps.map((step, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-zinc-400">
-                <span className="text-zinc-600 mt-0.5">+</span>
+              <div key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                <span className="text-slate-500 mt-0.5">+</span>
                 <span>{step}</span>
               </div>
             ))}
@@ -91,16 +92,16 @@ export default function VerdictScreen({
 
       {/* Actions */}
       {result.worthIt ? (
-        <div className="flex gap-3 mt-2">
+        <div className="flex gap-3 mt-1">
           <button
             onClick={onAccept}
-            className="flex-1 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm tracking-wide transition-colors"
+            className="flex-1 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors shadow-lg shadow-emerald-500/20"
           >
-            ADD TO QUEUE →
+            Add to Queue 📋
           </button>
           <button
             onClick={onReject}
-            className="px-4 py-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-sm transition-colors"
+            className="px-5 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-sm transition-colors font-medium"
           >
             Skip
           </button>
@@ -108,9 +109,9 @@ export default function VerdictScreen({
       ) : (
         <button
           onClick={onReject}
-          className="w-full py-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm tracking-wide transition-colors"
+          className="w-full py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition-colors mt-1"
         >
-          ← BACK TO START
+          ← Start Over
         </button>
       )}
     </div>

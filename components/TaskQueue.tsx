@@ -28,23 +28,28 @@ export default function TaskQueue({
 
   return (
     <div className="flex flex-col gap-5 animate-fade-in">
+      <div>
+        <h2 className="text-xl font-bold text-white">Your Queue 📋</h2>
+        <p className="text-slate-400 text-sm mt-0.5">Here's the honest truth about your day</p>
+      </div>
+
       {/* Total */}
-      <div className="bg-zinc-900 rounded-2xl p-5 border border-zinc-800">
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Your Queue</p>
+      <div className="bg-slate-800/60 rounded-3xl p-5 border-2 border-slate-700">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-4">⏱️ Total Time</p>
         <div className="flex items-end gap-4">
           <div>
-            <p className="text-xs text-zinc-500 mb-0.5">You think</p>
-            <p className="text-2xl font-bold text-zinc-400">{formatTime(totalEstimated)}</p>
+            <p className="text-xs text-slate-500 mb-1">You planned</p>
+            <p className="text-2xl font-bold text-slate-400">{formatTime(totalEstimated)}</p>
           </div>
-          <div className="text-zinc-600 pb-1">→</div>
+          <div className="text-slate-600 pb-1 text-lg">→</div>
           <div>
-            <p className="text-xs text-zinc-500 mb-0.5">Reality</p>
+            <p className="text-xs text-slate-500 mb-1">Reality</p>
             <p className="text-2xl font-bold text-white">{formatTime(totalRealistic)}</p>
           </div>
           {overrun > 0 && (
             <div className="ml-auto text-right">
-              <p className="text-xs text-amber-500">+{formatTime(overrun)} more</p>
-              <p className="text-xs text-zinc-600">than you planned</p>
+              <p className="text-sm font-bold text-amber-400">+{formatTime(overrun)} surprise</p>
+              <p className="text-xs text-slate-500">you didn't plan for</p>
             </div>
           )}
         </div>
@@ -52,18 +57,21 @@ export default function TaskQueue({
 
       {/* Task list */}
       <div className="flex flex-col gap-3">
-        {tasks.map((task) => (
+        {tasks.map((task, i) => (
           <div
             key={task.id}
-            className="bg-zinc-900 rounded-xl p-4 border border-zinc-800 flex items-start gap-3"
+            className="bg-slate-800/50 rounded-2xl p-4 flex items-start gap-3 border border-slate-700/50"
           >
+            <div className="w-7 h-7 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+              {i + 1}
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">{task.title}</p>
-              <p className="text-zinc-500 text-xs mt-0.5">{formatTime(task.realisticMinutes)} realistic</p>
+              <p className="text-white text-sm font-medium leading-snug">{task.title}</p>
+              <p className="text-slate-500 text-xs mt-1">~{formatTime(task.realisticMinutes)} realistic</p>
             </div>
             <button
               onClick={() => onRemove(task.id)}
-              className="text-zinc-600 hover:text-red-400 transition-colors text-lg leading-none mt-0.5"
+              className="text-slate-600 hover:text-red-400 transition-colors text-xl leading-none mt-0.5 shrink-0"
             >
               ×
             </button>
@@ -73,9 +81,9 @@ export default function TaskQueue({
 
       <button
         onClick={onAddMore}
-        className="w-full py-4 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm tracking-wide transition-colors"
+        className="w-full py-4 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm transition-colors shadow-lg shadow-violet-500/20"
       >
-        + ADD ANOTHER TASK
+        + Add Another Task
       </button>
     </div>
   );
