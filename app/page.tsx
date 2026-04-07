@@ -24,11 +24,13 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ task: title, gain, estimatedMinutes, context }),
       });
+      if (!res.ok) throw new Error("API error");
       const result: ReconResult = await res.json();
       setLastResult(result);
       setScreen("verdict");
     } catch {
       setScreen("form");
+      alert("Something went wrong — try again!");
     }
   };
 
@@ -88,6 +90,12 @@ export default function HomePage() {
             <p className="text-lg" style={{ color: "#1a1a2e" }}>Running your recon...</p>
             <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>Crunching the real numbers ✨</p>
           </div>
+          <button
+            onClick={() => { setScreen("form"); setPendingTask(null); }}
+            className="text-sm mt-2" style={{ color: "#9ca3af" }}
+          >
+            Cancel
+          </button>
         </div>
       )}
 

@@ -61,7 +61,7 @@ export default function TaskQueue({ tasks, totalRealistic, totalEstimated, onRem
               {i + 1}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm leading-snug" style={{ color: "#1a1a2e" }}>{task.title}</p>
+              <p className="text-sm leading-snug truncate" style={{ color: "#1a1a2e" }}>{task.title}</p>
               <p className="text-xs mt-1" style={{ color: "#9ca3af" }}>~{formatTime(task.realisticMinutes)} realistic</p>
             </div>
             <button onClick={() => onRemove(task.id)} className="text-xl leading-none mt-0.5 shrink-0 transition-colors hover:text-red-400" style={{ color: "#d1d5db" }}>×</button>

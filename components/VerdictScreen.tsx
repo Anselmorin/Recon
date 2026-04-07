@@ -21,7 +21,7 @@ const card = { background: "white", borderRadius: "20px", padding: "1.25rem", bo
 
 export default function VerdictScreen({ result, task, estimatedMinutes, onAccept, onReject }: VerdictScreenProps) {
   const overrun = result.realisticMinutes - estimatedMinutes;
-  const overrunPct = Math.round((overrun / estimatedMinutes) * 100);
+  const overrunPct = estimatedMinutes > 0 ? Math.round((overrun / estimatedMinutes) * 100) : 0;
 
   return (
     <div className="flex flex-col gap-4 animate-pop">
@@ -86,23 +86,16 @@ export default function VerdictScreen({ result, task, estimatedMinutes, onAccept
       )}
 
       {/* Actions */}
-      {result.worthIt ? (
-        <div className="flex gap-3 mt-1">
-          <button onClick={onAccept} className="flex-1 py-4 rounded-2xl text-sm text-white transition-all"
-            style={{ background: "linear-gradient(135deg, #10b981, #3b82f6)" }}>
-            Add to Queue 📋
-          </button>
-          <button onClick={onReject} className="px-5 py-4 rounded-2xl text-sm transition-all"
-            style={{ background: "white", color: "#9ca3af", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            Skip
-          </button>
-        </div>
-      ) : (
-        <button onClick={onReject} className="w-full py-4 rounded-2xl text-sm transition-all mt-1"
-          style={{ background: "white", color: "#374151", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          ← Start Over
+      <div className="flex gap-3 mt-1">
+        <button onClick={onAccept} className="flex-1 py-4 rounded-2xl text-sm text-white transition-all"
+          style={{ background: "linear-gradient(135deg, #10b981, #3b82f6)" }}>
+          {result.worthIt ? "Add to Queue 📋" : "Add Anyway"}
         </button>
-      )}
+        <button onClick={onReject} className="px-5 py-4 rounded-2xl text-sm transition-all"
+          style={{ background: "#f3f4f6", color: "#6b7280" }}>
+          ← Back
+        </button>
+      </div>
     </div>
   );
 }

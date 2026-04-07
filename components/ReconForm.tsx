@@ -52,12 +52,10 @@ function getFollowUps(task: string): FollowUp[] {
 }
 
 const card = { background: "white", borderRadius: "16px", padding: "0.9rem 1rem", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" };
-const input = { background: "white", border: "2px solid #e5e7eb", borderRadius: "14px", padding: "10px 14px", color: "#1a1a2e", width: "100%", fontSize: "0.875rem", outline: "none" };
 
 export default function ReconForm({ onSubmit }: ReconFormProps) {
   const [step, setStep] = useState<"main" | "followup">("main");
   const [title, setTitle] = useState("");
-  const [gain, setGain] = useState("");
   const [category, setCategory] = useState("");
   const [hours, setHours] = useState("");
   const [mins, setMins] = useState("");
@@ -146,7 +144,7 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
 
       <div style={card}>
         <label className="text-xs mb-1.5 block" style={{ color: "#9ca3af" }}>What&apos;s the task?</label>
-        <textarea value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Drive to the store to grab ingredients..." rows={2}
+        <textarea value={title} onChange={e => setTitle(e.target.value.slice(0, 200))} placeholder="e.g. Drive to the store to grab ingredients..." rows={2} maxLength={200}
           className="resize-none focus:outline-none w-full text-sm" style={{ border: "none", background: "transparent", color: "#1a1a2e", padding: 0, outline: "none" }} />
       </div>
 
@@ -175,9 +173,12 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
         <div className="flex gap-2">
           {(["hrs", "min"] as const).map((label) => (
             <div key={label} className="flex-1 relative">
-              <input type="number" min="0" max={label === "min" ? 59 : undefined}
+              <input type="number" min="0" max={label === "min" ? 59 : 24}
                 value={label === "hrs" ? hours : mins}
-                onChange={e => label === "hrs" ? setHours(e.target.value) : setMins(e.target.value)}
+                onChange={e => {
+                  const val = Math.max(0, Math.min(parseInt(e.target.value) || 0, label === "min" ? 59 : 24));
+                  label === "hrs" ? setHours(String(val)) : setMins(String(val));
+                }}
                 placeholder="0"
                 className="focus:outline-none text-sm w-full"
                 style={{ background: "#f9fafb", border: "1.5px solid #e5e7eb", borderRadius: "10px", padding: "8px 32px 8px 10px", color: "#1a1a2e", outline: "none" }}
