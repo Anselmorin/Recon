@@ -14,7 +14,7 @@ export default function HomePage() {
   const [pendingTask, setPendingTask] = useState<{ title: string; gain: string; estimatedMinutes: number } | null>(null);
   const [lastResult, setLastResult] = useState<ReconResult | null>(null);
 
-  const handleSubmit = async (title: string, gain: string, estimatedMinutes: number) => {
+  const handleSubmit = async (title: string, gain: string, estimatedMinutes: number, context: string[]) => {
     setPendingTask({ title, gain, estimatedMinutes });
     setScreen("loading");
 
@@ -22,7 +22,7 @@ export default function HomePage() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task: title, gain, estimatedMinutes }),
+        body: JSON.stringify({ task: title, gain, estimatedMinutes, context }),
       });
       const result: ReconResult = await res.json();
       setLastResult(result);

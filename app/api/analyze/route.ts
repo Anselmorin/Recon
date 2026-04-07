@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-function analyze(task: string, gain: string, estimatedMinutes: number) {
+function analyze(task: string, gain: string, estimatedMinutes: number, context: string[] = []) {
   const taskLower = task.toLowerCase();
   const gainLower = gain.toLowerCase();
 
@@ -36,16 +36,43 @@ function analyze(task: string, gain: string, estimatedMinutes: number) {
     }
   }
 
+  // Factor in context answers
+  const contextStr = context.join(" ").toLowerCase();
+  const hasBadParking = contextStr.includes("valet") || contextStr.includes("street parking") || contextStr.includes("paid parking");
+  const hasHeavyTraffic = contextStr.includes("heavy") || contextStr.includes("rush hour");
+  const hasLines = contextStr.includes("always a line") || contextStr.includes("unpredictable");
+  const hasNoIdea = contextStr.includes("no idea");
+  const hasBrowsing = contextStr.includes("browsing");
+  const hasShower = contextStr.includes("oops");
+  const hasInterruptions = contextStr.includes("constantly interrupted") || contextStr.includes("definitely some");
+  const hasLowEnergy = contextStr.includes("running on empty") || contextStr.includes("a bit tired");
+  const hasFirstTime = contextStr.includes("first time") || contextStr.includes("never");
+  const hasMissingItems = contextStr.includes("need to buy") || contextStr.includes("need to shop") || contextStr.includes("missing a few");
+
   // Realistic time multiplier
   let multiplier = 1.3; // baseline — people always underestimate
   if (isComplex) multiplier += 0.4;
   if (isQuick) multiplier = Math.max(1.1, multiplier - 0.2);
   if (estimatedMinutes < 15) multiplier += 0.2; // short tasks always take longer than you think
+  if (hasBadParking) multiplier += 0.2;
+  if (hasHeavyTraffic) multiplier += 0.25;
+  if (hasLines) multiplier += 0.15;
+  if (hasNoIdea) multiplier += 0.2;
+  if (hasBrowsing) multiplier += 0.15;
+  if (hasShower) multiplier += 0.25; // forgot the shower
+  if (hasInterruptions) multiplier += 0.3;
+  if (hasLowEnergy) multiplier += 0.2;
+  if (hasFirstTime) multiplier += 0.4;
+  if (hasMissingItems) multiplier += 0.5; // need to shop first = double the time
 
   const realisticMinutes = Math.round(estimatedMinutes * multiplier);
 
-  // Worth it scoring
+  // Worth it scoring — also factor context
   let score = 50; // neutral
+  if (hasBadParking && !isHighValue) score -= 10;
+  if (hasHeavyTraffic && !isHighValue) score -= 10;
+  if (hasLowEnergy) score -= 5;
+  if (hasMissingItems) score -= 15;
   if (isHighValue) score += 25;
   if (isLowValue) score -= 20;
   if (isComplex && !isHighValue) score -= 10;
@@ -87,7 +114,7 @@ function analyze(task: string, gain: string, estimatedMinutes: number) {
 }
 
 export async function POST(req: NextRequest) {
-  const { task, gain, estimatedMinutes } = await req.json();
-  const result = analyze(task, gain, estimatedMinutes);
+  const { task, gain, estimatedMinutes, context = [] } = await req.json();
+  const result = analyze(task, gain, estimatedMinutes, context);
   return NextResponse.json(result);
 }
