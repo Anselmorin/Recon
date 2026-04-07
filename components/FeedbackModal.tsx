@@ -7,9 +7,7 @@ interface FeedbackModalProps {
   verdictAccurate?: boolean | null; // pre-fill if coming from verdict screen
 }
 
-const ENDPOINT = process.env.NEXT_PUBLIC_FORMSPREE_ID
-  ? `https://formspree.io/f/${process.env.NEXT_PUBLIC_FORMSPREE_ID}`
-  : null;
+const ENDPOINT = "https://formspree.io/f/mpqobrqo";
 
 export default function FeedbackModal({ onClose, verdictAccurate = null }: FeedbackModalProps) {
   const [accurate, setAccurate] = useState<boolean | null>(verdictAccurate);
@@ -18,10 +16,6 @@ export default function FeedbackModal({ onClose, verdictAccurate = null }: Feedb
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ENDPOINT) {
-      setStatus("error");
-      return;
-    }
     setStatus("sending");
     try {
       const res = await fetch(ENDPOINT, {
