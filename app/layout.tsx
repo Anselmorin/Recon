@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${comfortaa.className} bg-[#0f0f1a] text-white antialiased min-h-screen`}>
+      <body className={`${comfortaa.className} antialiased min-h-screen`} style={{ background: "linear-gradient(160deg, #fdf4ff 0%, #eff6ff 40%, #f0fdf4 100%)", color: "#1a1a2e" }}>
         {children}
       </body>
     </html>

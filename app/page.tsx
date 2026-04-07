@@ -33,7 +33,7 @@ export default function HomePage() {
 
   const handleAccept = () => {
     if (!pendingTask || !lastResult) return;
-    const newTask: Task = {
+    setTasks(prev => [...prev, {
       id: crypto.randomUUID(),
       title: pendingTask.title,
       description: pendingTask.gain,
@@ -43,17 +43,10 @@ export default function HomePage() {
       verdict: lastResult.verdict,
       gain: pendingTask.gain,
       addedAt: new Date().toISOString(),
-    };
-    setTasks((prev) => [...prev, newTask]);
+    }]);
     setScreen("queue");
     setPendingTask(null);
     setLastResult(null);
-  };
-
-  const handleReject = () => {
-    setPendingTask(null);
-    setLastResult(null);
-    setScreen("form");
   };
 
   const totalRealistic = tasks.reduce((sum, t) => sum + t.realisticMinutes, 0);
@@ -66,19 +59,19 @@ export default function HomePage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-2xl">🔍</span>
-            <h1 className="text-2xl font-bold rainbow-text">Recon</h1>
+            <h1 className="text-2xl rainbow-text">Recon</h1>
           </div>
-          <p className="text-sm text-white/40 mt-0.5">Is it actually worth your time?</p>
+          <p className="text-sm mt-0.5" style={{ color: "#6b7280" }}>Is it actually worth your time?</p>
         </div>
         {tasks.length > 0 && (
           <button
             onClick={() => setScreen(screen === "queue" ? "form" : "queue")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
-            style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.7)" }}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all"
+            style={{ background: "white", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", color: "#374151" }}
           >
             <span>📋 Queue</span>
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #a78bfa, #60a5fa)" }}>
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs text-white"
+              style={{ background: "linear-gradient(135deg, #a855f7, #3b82f6)" }}>
               {tasks.length}
             </span>
           </button>
@@ -91,8 +84,8 @@ export default function HomePage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-5 animate-fade-in">
           <div className="text-6xl animate-bounce-slow">🔍</div>
           <div className="text-center">
-            <p className="text-white font-semibold text-lg">Running your recon...</p>
-            <p className="text-white/40 text-sm mt-1">Crunching the real numbers ✨</p>
+            <p className="text-lg" style={{ color: "#1a1a2e" }}>Running your recon...</p>
+            <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>Crunching the real numbers ✨</p>
           </div>
         </div>
       )}
@@ -103,7 +96,7 @@ export default function HomePage() {
           task={pendingTask.title}
           estimatedMinutes={pendingTask.estimatedMinutes}
           onAccept={handleAccept}
-          onReject={handleReject}
+          onReject={() => { setPendingTask(null); setLastResult(null); setScreen("form"); }}
         />
       )}
 
