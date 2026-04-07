@@ -8,7 +8,7 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
   const complexKeywords = ["drive", "travel", "commute", "install", "setup", "build", "fix", "repair", "clean", "organize", "move", "buy", "shop", "cook", "plan", "research", "apply", "fill out", "sign up", "errand", "pick up", "drop off", "stop"];
   const quickKeywords = ["email", "text", "call", "check", "read", "watch", "look up", "google", "search"];
   const lowValueKeywords = ["maybe", "might", "could", "possibly", "sort of", "kinda"];
-  const highValueKeywords = ["money", "save", "$", "health", "important", "deadline", "need", "must", "job", "school", "work"];
+  const highValueKeywords = ["money", "save", "$", "health", "important", "deadline", "need", "must", "job", "school", "work", "family", "friend", "dinner", "lunch", "birthday", "fun", "ice cream", "vacation", "trip", "celebrate", "together", "kids", "date"];
 
   // Detect task types for hidden steps + multipliers
   const isDriving = taskLower.match(/driv|car|ride|commut|travel|go to|head to|get to|pick up|drop off/);
