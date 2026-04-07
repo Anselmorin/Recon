@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Comfortaa } from "next/font/google";
 import "./globals.css";
 
-const comfortaa = Comfortaa({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+const comfortaa = Comfortaa({ subsets: ["latin"], weight: ["700"] });
 
 export const metadata: Metadata = {
   title: "Recon",
