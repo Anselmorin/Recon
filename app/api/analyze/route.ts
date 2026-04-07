@@ -31,7 +31,16 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
 
   if (isDriving) {
     hiddenSteps.push("Getting ready + walking to the car");
-    hiddenSteps.push("Finding parking (always takes longer)");
+    if (contextStr.includes("valet")) {
+      hiddenSteps.push("Waiting for the valet to bring the car back");
+    } else if (contextStr.includes("street parking")) {
+      hiddenSteps.push("Circling for street parking");
+      hiddenSteps.push("Walking from wherever you end up parking");
+    } else if (contextStr.includes("paid parking")) {
+      hiddenSteps.push("Finding the parking garage + paying on the way out");
+    } else if (!contextStr.includes("free")) {
+      hiddenSteps.push("Finding parking (always takes longer)");
+    }
   }
   if (isShopping) {
     hiddenSteps.push("Browsing longer than you planned");
