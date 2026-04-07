@@ -84,30 +84,36 @@ function analyze(task: string, gain: string, estimatedMinutes: number, context: 
   const hasFirstTime = contextStr.includes("first time") || contextStr.includes("never");
   const hasMissingItems = contextStr.includes("need to buy") || contextStr.includes("need to shop") || contextStr.includes("missing a few");
 
-  // Realistic time multiplier
-  let multiplier = 1.3; // baseline — people always underestimate
-  if (isComplex) multiplier += 0.3;
-  if (isQuick) multiplier = Math.max(1.1, multiplier - 0.2);
-  if (estimatedMinutes < 15) multiplier += 0.2; // short tasks always take longer than you think
-  if (isDriving) multiplier += 0.2; // driving always has surprises
-  if (isShopping) multiplier += 0.15;
-  if (isCooking) multiplier += 0.2; // prep + cleanup
-  if (isCleaning) multiplier += 0.15;
-  if (isFixing) multiplier += 0.35; // fixing always takes longer
-  if (isExercise) multiplier += 0.3; // travel + shower
-  if (hasStopover) multiplier += 0.2;
-  if (hasErrand) multiplier += 0.15;
-  // Context answers
-  if (hasBadParking) multiplier += 0.2;
-  if (hasHeavyTraffic) multiplier += 0.25;
-  if (hasLines) multiplier += 0.15;
-  if (hasNoIdea) multiplier += 0.2;
-  if (hasBrowsing) multiplier += 0.15;
-  if (hasShower) multiplier += 0.25;
-  if (hasInterruptions) multiplier += 0.3;
-  if (hasLowEnergy) multiplier += 0.2;
-  if (hasFirstTime) multiplier += 0.4;
-  if (hasMissingItems) multiplier += 0.5;
+  // Realistic time multiplier — pick ONE main category, don't stack them all
+  let multiplier = 1.15; // baseline — everyone underestimates a little
+
+  // Main task type adds time (pick the biggest one, not all)
+  if (isFixing) multiplier = 1.5; // fixing always takes way longer
+  else if (isExercise) multiplier = 1.35; // travel + shower
+  else if (isCooking) multiplier = 1.25; // prep + cleanup
+  else if (isDriving && isShopping) multiplier = 1.3; // drive + shop combo
+  else if (isDriving) multiplier = 1.2;
+  else if (isShopping) multiplier = 1.2;
+  else if (isCleaning) multiplier = 1.2;
+  else if (isComplex) multiplier = 1.2;
+  else if (isQuick) multiplier = 1.1;
+
+  // Context clues — small additive bumps, capped so they don't spiral
+  let contextBonus = 0;
+  if (hasBadParking) contextBonus += 0.08;
+  if (hasHeavyTraffic) contextBonus += 0.1;
+  if (hasLines) contextBonus += 0.07;
+  if (hasNoIdea) contextBonus += 0.1;
+  if (hasBrowsing) contextBonus += 0.07;
+  if (hasShower) contextBonus += 0.1;
+  if (hasInterruptions) contextBonus += 0.1;
+  if (hasLowEnergy) contextBonus += 0.08;
+  if (hasFirstTime) contextBonus += 0.15;
+  if (hasMissingItems) contextBonus += 0.2;
+  if (hasStopover || hasErrand) contextBonus += 0.1;
+
+  // Cap context bonus at 0.4 so it doesn't go insane
+  multiplier += Math.min(contextBonus, 0.4);
 
   const realisticMinutes = Math.round(estimatedMinutes * multiplier);
 
