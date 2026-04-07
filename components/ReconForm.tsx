@@ -51,8 +51,8 @@ function getFollowUps(task: string): FollowUp[] {
   return fu.slice(0, isDriving ? 4 : 3);
 }
 
-const card = { background: "white", borderRadius: "20px", padding: "1.25rem", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" };
-const input = { background: "white", border: "2px solid #e5e7eb", borderRadius: "16px", padding: "12px 16px", color: "#1a1a2e", width: "100%", fontSize: "0.875rem", outline: "none" };
+const card = { background: "white", borderRadius: "16px", padding: "0.9rem 1rem", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" };
+const input = { background: "white", border: "2px solid #e5e7eb", borderRadius: "14px", padding: "10px 14px", color: "#1a1a2e", width: "100%", fontSize: "0.875rem", outline: "none" };
 
 export default function ReconForm({ onSubmit }: ReconFormProps) {
   const [step, setStep] = useState<"main" | "followup">("main");
@@ -125,38 +125,37 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
   }
 
   return (
-    <form onSubmit={handleNext} className="flex flex-col gap-4 animate-fade-in">
-      {/* Think hint */}
-      <div className="rounded-2xl px-4 py-3" style={{ background: "linear-gradient(135deg, #fefce8, #fff7ed)", border: "2px solid #fde68a" }}>
-        <p className="text-xs mb-1" style={{ color: "#d97706" }}>💡 Think about:</p>
-        <p className="text-xs leading-relaxed" style={{ color: "#92400e" }}>
-          Driving · Traffic · Parking · Getting ready · Lines · Stopovers · Errands · Cleanup · Tools · Getting back
+    <form onSubmit={handleNext} className="flex flex-col gap-3 animate-fade-in">
+      {/* Think hint — compact single line */}
+      <div className="rounded-xl px-3 py-2" style={{ background: "linear-gradient(135deg, #fefce8, #fff7ed)", border: "1.5px solid #fde68a" }}>
+        <p className="text-xs" style={{ color: "#92400e" }}>
+          <span style={{ color: "#d97706" }}>💡</span> Driving · Traffic · Parking · Lines · Cleanup · Tools · Getting back
         </p>
       </div>
 
       <div style={card}>
-        <label className="text-sm mb-2 block" style={{ color: "#374151" }}>What&apos;s the task?</label>
+        <label className="text-xs mb-1.5 block" style={{ color: "#9ca3af" }}>What&apos;s the task?</label>
         <textarea value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Drive to the store to grab ingredients..." rows={2}
-          className="resize-none focus:outline-none w-full text-sm" style={{ ...input, padding: "10px 0", border: "none", background: "transparent", color: "#1a1a2e" }} />
+          className="resize-none focus:outline-none w-full text-sm" style={{ border: "none", background: "transparent", color: "#1a1a2e", padding: 0, outline: "none" }} />
       </div>
 
       <div style={card}>
-        <label className="text-sm mb-2 block" style={{ color: "#374151" }}>What do you get out of it?</label>
+        <label className="text-xs mb-1.5 block" style={{ color: "#9ca3af" }}>What do you get out of it?</label>
         <textarea value={gain} onChange={e => setGain(e.target.value)} placeholder="e.g. Save money, feel productive, get it done..." rows={2}
-          className="resize-none focus:outline-none w-full text-sm" style={{ ...input, padding: "10px 0", border: "none", background: "transparent", color: "#1a1a2e" }} />
+          className="resize-none focus:outline-none w-full text-sm" style={{ border: "none", background: "transparent", color: "#1a1a2e", padding: 0, outline: "none" }} />
       </div>
 
       <div style={card}>
-        <label className="text-sm mb-3 block" style={{ color: "#374151" }}>How long do you <em>think</em> it&apos;ll take?</label>
-        <div className="flex gap-3">
+        <label className="text-xs mb-2 block" style={{ color: "#9ca3af" }}>How long do you think it&apos;ll take?</label>
+        <div className="flex gap-2">
           {(["hrs", "min"] as const).map((label) => (
             <div key={label} className="flex-1 relative">
               <input type="number" min="0" max={label === "min" ? 59 : undefined}
                 value={label === "hrs" ? hours : mins}
                 onChange={e => label === "hrs" ? setHours(e.target.value) : setMins(e.target.value)}
                 placeholder="0"
-                className="focus:outline-none text-sm"
-                style={{ ...input, paddingRight: "40px" }}
+                className="focus:outline-none text-sm w-full"
+                style={{ background: "#f9fafb", border: "1.5px solid #e5e7eb", borderRadius: "10px", padding: "8px 32px 8px 10px", color: "#1a1a2e", outline: "none" }}
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs" style={{ color: "#9ca3af" }}>{label}</span>
             </div>
@@ -164,7 +163,7 @@ export default function ReconForm({ onSubmit }: ReconFormProps) {
         </div>
       </div>
 
-      <button type="submit" disabled={!canSubmit} className="w-full py-4 rounded-2xl text-sm text-white transition-all"
+      <button type="submit" disabled={!canSubmit} className="w-full py-3.5 rounded-2xl text-sm text-white transition-all"
         style={{ background: canSubmit ? "linear-gradient(135deg, #f43f5e, #a855f7, #3b82f6)" : "#e5e7eb", color: canSubmit ? "white" : "#9ca3af" }}>
         Next →
       </button>

@@ -54,9 +54,9 @@ export default function HomePage() {
   const totalEstimated = tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0);
 
   return (
-    <main className="min-h-screen flex flex-col max-w-md mx-auto px-5 py-8">
+    <main className="min-h-screen flex flex-col max-w-md mx-auto px-4 py-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-5">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-2xl">🔍</span>
